@@ -1,0 +1,25 @@
+services:
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    env_file: ./api/.env
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+
+  worker-scraper:
+    build:
+      context: ./workers
+      dockerfile: Dockerfile
+    env_file: ./workers/.env
+    command: ["python", "scraper_worker.py"]
+    restart: unless-stopped
+
+  worker-ml:
+    build:
+      context: ./workers
+      dockerfile: Dockerfile
+    env_file: ./workers/.env
+    command: ["python", "ml_worker.py"]
+    restart: unless-stopped
