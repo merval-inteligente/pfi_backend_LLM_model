@@ -35,6 +35,6 @@ Thumbs.db
 .coverage
 .cache/
 .history/
-./machine_learning_worker/modelo_noticias_financieras/*
 .env
+workers/.env
 workers/machine_learning_worker/modelo_noticias_financieras/
