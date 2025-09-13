@@ -82,7 +82,7 @@ def scrapear_reddit():
 
             if es_argentino(f"{titulo} {contenido}"):
                 resultados.append({
-                    "fecha_scrapeo": datetime.now().isoformat(),
+                    "scrapingDate": datetime.now().isoformat(),
                     "titulo": titulo,
                     "usuario": usuario,
                     "subreddit": subreddit,

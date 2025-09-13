@@ -1,6 +1,13 @@
+lista_noticias = [{
+    "nivel_usuario": 1,
+    "texto_original": (
+        "La reciente baja del dólar en Argentina responde a un entramado de factores que combinaron ajustes de mercado, intervenciones oficiales y un endurecimiento de la política monetaria. Expertos relevados por iProfesional comentaron que la dinámica cambiaria se apoyó en la credibilidad de corto plazo, en la aparición de oferta de divisas cada vez que la cotización se acercaba al techo, y en las señales del Gobierno que reforzaron la idea de un control firme sobre el tipo de cambio. En paralelo, los analistas señalaron que el viraje en la política monetaria resultó determinante. La suba de encajes y el retiro de liquidez impactaron de lleno en el sistema financiero, llevando a un salto abrupto de tasas de interés que duplicaron sus niveles en cuestión de días. Esto generó un freno inmediato en la expansión del crédito privado, al mismo tiempo que aumentó la carga de intereses del Tesoro y acortó peligrosamente los plazos de la deuda. Asimismo, indicaron que la eliminación de instrumentos como las Lefis y el esquema de remonetización modificaron la forma en que el Tesoro y el Banco Central administraron los pesos disponibles. El financiamiento interno se volvió más costoso y complejo, mientras que el dólar oficial pasó a ser la principal variable de ajuste tras el levantamiento parcial del cepo. En ese escenario, el riesgo país se mantuvo elevado y el acceso al crédito externo continuó cerrado, lo que reforzó la dependencia de medidas locales. Para los especialistas, el resultado es un dólar contenido a costa de un programa económico mucho más contractivo. La estrategia estabilizó la divisa en el corto plazo, pero al precio de enfriar la actividad y deteriorar el crédito. Con vencimientos de deuda exigentes por delante y en vísperas de un proceso electoral clave, la gran incógnita quedó en torno a la sostenibilidad: hasta qué punto se podía sostener un esquema basado en tasas altas, encajes crecientes y un ajuste monetario que replicó la lógica de los programas con el FMI de años anteriores.")
+}]
 import os
 import torch
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+import argparse
+import json
 
 lista_noticias = [{
     "nivel_usuario": 1,
@@ -80,15 +87,44 @@ def adapt_news(tokenizer, model, device, level, text):
 
     return adapted
 
-def get_adaptations_news(news_list):
-    tokenizer, model, device = load_model_tokenizer_device()
 
-    for item in news_list:
-        nivel = item.get("nivel_usuario", 1)
-        texto = item["texto_original"]
-        item["texto_adaptado"] = adapt_news(tokenizer, model, device, nivel, texto)
-        print("\n=== TEXTO ADAPTADO (Nivel", nivel, ") ===\n")
-        print(item["texto_adaptado"])
+def adapt_jsonl(input_path, output_path, nivel_field="nivel_usuario", texto_field="texto_original"):
+    tokenizer, model, device = load_model_tokenizer_device()
+    total = 0
+    with open(input_path, "r", encoding="utf-8") as fin, open(output_path, "w", encoding="utf-8") as fout:
+        for line in fin:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                item = json.loads(line)
+            except Exception:
+                continue
+            nivel = item.get(nivel_field, 1)
+            texto = item.get(texto_field, "")
+            item["texto_adaptado"] = adapt_news(tokenizer, model, device, nivel, texto)
+            fout.write(json.dumps(item, ensure_ascii=False) + "\n")
+            total += 1
+            print(f"Adaptado registro {total}")
+    print(f"\n✅ Adaptación finalizada. Total de registros procesados: {total}")
+
 
 if __name__ == "__main__":
-    get_adaptations_news(lista_noticias)
+    parser = argparse.ArgumentParser(description="Adaptar noticias usando modelo local.")
+    parser.add_argument("--input", help="Ruta del archivo JSONL de entrada")
+    parser.add_argument("--output", help="Ruta del archivo JSONL de salida")
+    parser.add_argument("--nivel_field", default="nivel_usuario", help="Campo de nivel en el JSONL")
+    parser.add_argument("--texto_field", default="texto_original", help="Campo de texto en el JSONL")
+    args = parser.parse_args()
+
+    if args.input and args.output:
+        adapt_jsonl(args.input, args.output, args.nivel_field, args.texto_field)
+    else:
+        # Modo prueba: usa lista_noticias
+        print("Ejecutando prueba con lista_noticias...")
+        tokenizer, model, device = load_model_tokenizer_device()
+        for item in lista_noticias:
+            nivel = item.get("nivel_usuario", 1)
+            texto = item["texto_original"]
+            item["texto_adaptado"] = adapt_news(tokenizer, model, device, nivel, texto)
+            print(f"\n=== TEXTO ADAPTADO (Nivel {nivel}) ===\n{item['texto_adaptado']}")

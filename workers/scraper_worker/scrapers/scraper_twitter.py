@@ -102,7 +102,7 @@ def scrapear_tweets(empresa,driver,tweets_finales):
                         "contenido": texto,
                         "sentimiento": analizar_sentimiento(texto).output,
                         "url": f"https://twitter.com{link}" if not link.startswith("http") else link,
-                        "fecha_scrapeo": datetime.now().isoformat(),
+                        "scrapingDate": datetime.now().isoformat(),
                         "fecha_tweet": fecha_tweet
                     })
 

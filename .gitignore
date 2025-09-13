@@ -1,0 +1,40 @@
+# === Archivos y carpetas críticas ===
+# Modelos entrenados y checkpoints
+modelo_noticias_financieras/
+checkpoints/
+
+# Datos sensibles y configuraciones
+*.env
+*.key
+*.secret
+*.pem
+*api_key*
+*apikey*
+*token*
+*credential*
+*password*
+
+# Dependencias y entornos
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.vscode/
+.idea/
+node_modules/
+env/
+venv/
+.DS_Store
+Thumbs.db
+
+# Salidas de notebooks y experimentos
+*.out
+*.output
+*.results
+
+# Otros archivos del sistema
+.coverage
+.cache/
+.history/
+./machine_learning_worker/modelo_noticias_financieras/*
+.env
+workers/machine_learning_worker/modelo_noticias_financieras/
